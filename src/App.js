@@ -1,25 +1,56 @@
-import logo from './logo.svg';
-import './App.css';
+import { Grid } from "@mui/material";
+import Navbar from "./Navbar";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import SearchBar from "./SearchBar";
+import NewsList from "./NewsList";
+const App = () => {
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-function App() {
+  useEffect(() => {
+    setIsLoading(true);
+    // Load mock news from a JSON file or directly from the API
+    axios
+      .get("https://hn.algolia.com/api/v1/search?query=react")
+      .then((res) => {
+        setSearchResults(res.data.hits);
+        setIsLoading(false);
+      })
+      .catch((err) => console.error(err));
+  }, []);
+
+  const handleSearch = () => {
+    setIsLoading(true);
+    axios
+      .get(`https://hn.algolia.com/api/v1/search?query=${searchTerm}`)
+      .then((res) => {
+        console.log(res.data.hits)
+        setSearchResults(res.data.hits);
+        setIsLoading(false);
+        setSearchTerm("")
+      })
+      .catch((err) => console.error(err));
+  };
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+   <>
+   <Navbar />
+   
+    <Grid container spacing={3} style={{ width: "80%", margin: "0 auto" }}>
+      
+      <Grid item xs={12}>
+        <NewsList results={searchResults} isLoading={isLoading} />
+      </Grid>
+      <Grid item xs={12}>
+        <SearchBar
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          handleSearch={handleSearch}
+        />
+      </Grid>
+    </Grid>
+    </>
   );
-}
-
+};
 export default App;
